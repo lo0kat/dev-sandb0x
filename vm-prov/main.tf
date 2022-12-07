@@ -1,7 +1,8 @@
 terraform {
   required_providers {
     libvirt = {
-      source = "dmacvicar/libvirt"
+      source  = "dmacvicar/libvirt"
+      version = "0.7.0"
     }
   }
 }
@@ -9,6 +10,76 @@ terraform {
 provider "libvirt" {
   ## Configuration options
   uri = "qemu:///system"
-  #alias = "server2"
-  #uri   = "qemu+ssh://root@192.168.100.10/system"
+
+}
+
+resource "libvirt_pool" "ubuntu" {
+  name = "ubuntu"
+  type = "dir"
+  path = "/tmp/terraform-provider-libvirt-pool-ubuntu"
+}
+
+# We fetch the latest ubuntu release image from their mirrors
+resource "libvirt_volume" "ubuntu-qcow2" {
+  name   = "ubuntu-qcow2"
+  pool   = libvirt_pool.ubuntu.name
+  source = "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img"
+  format = "qcow2"
+}
+
+data "template_file" "user_data" {
+  template = file("${path.module}/cloud_init.cfg")
+}
+
+data "template_file" "network_config" {
+  template = file("${path.module}/network_config.cfg")
+}
+
+# for more info about paramater check this out
+# https://github.com/dmacvicar/terraform-provider-libvirt/blob/master/website/docs/r/cloudinit.html.markdown
+# Use CloudInit to add our ssh-key to the instance
+# you can add also meta_data field
+resource "libvirt_cloudinit_disk" "commoninit" {
+  name           = "commoninit.iso"
+  user_data      = data.template_file.user_data.rendered
+  network_config = data.template_file.network_config.rendered
+  pool           = libvirt_pool.ubuntu.name
+}
+
+# Create the machine
+resource "libvirt_domain" "domain-ubuntu" {
+  name   = "ubuntu-terraform-test"
+  memory = "4096"
+  vcpu   = 1
+
+  cloudinit = libvirt_cloudinit_disk.commoninit.id
+
+  network_interface {
+    network_name = "default"
+  }
+
+  # IMPORTANT: this is a known bug on cloud images, since they expect a console
+  # we need to pass it
+  # https://bugs.launchpad.net/cloud-images/+bug/1573095
+  console {
+    type        = "pty"
+    target_port = "0"
+    target_type = "serial"
+  }
+
+  console {
+    type        = "pty"
+    target_type = "virtio"
+    target_port = "1"
+  }
+
+  disk {
+    volume_id = libvirt_volume.ubuntu-qcow2.id
+  }
+
+  graphics {
+    type        = "spice"
+    listen_type = "address"
+    autoport    = true
+  }
 }
