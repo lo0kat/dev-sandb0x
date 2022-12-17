@@ -13,17 +13,17 @@ provider "libvirt" {
 
 }
 
-resource "libvirt_pool" "ubuntu" {
-  name = "ubuntu"
+resource "libvirt_pool" "fed-cloud" {
+  name = "fed-cloud"
   type = "dir"
-  path = "/tmp/terraform-provider-libvirt-pool-ubuntu"
+  path = "/home/louis/Infra/storage/fed_cloud"
 }
 
 # We fetch the latest ubuntu release image from their mirrors
-resource "libvirt_volume" "ubuntu-qcow2" {
-  name   = "ubuntu-qcow2"
-  pool   = libvirt_pool.ubuntu.name
-  source = "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img"
+resource "libvirt_volume" "fed-cloud-qcow2" {
+  name   = "fed-cloud-qcow2"
+  pool   = libvirt_pool.fed-cloud.name
+  source = "/home/louis/Infra/img/Fedora-Cloud-Base-37-1.7.x86_64.qcow2"
   format = "qcow2"
 }
 
@@ -43,14 +43,14 @@ resource "libvirt_cloudinit_disk" "commoninit" {
   name           = "commoninit.iso"
   user_data      = data.template_file.user_data.rendered
   network_config = data.template_file.network_config.rendered
-  pool           = libvirt_pool.ubuntu.name
+  pool           = libvirt_pool.fed-cloud.name
 }
 
 # Create the machine
-resource "libvirt_domain" "domain-ubuntu" {
-  name   = "ubuntu-terraform-test"
-  memory = "4096"
-  vcpu   = 1
+resource "libvirt_domain" "domain-fed-cloud" {
+  name   = "k3s-fed"
+  memory = "2048"
+  vcpu   = 2
 
   cloudinit = libvirt_cloudinit_disk.commoninit.id
 
@@ -74,7 +74,7 @@ resource "libvirt_domain" "domain-ubuntu" {
   }
 
   disk {
-    volume_id = libvirt_volume.ubuntu-qcow2.id
+    volume_id = libvirt_volume.fed-cloud-qcow2.id
   }
 
   graphics {
