@@ -43,7 +43,7 @@ For more information visit :
 
 ## VM Provisionning
 Under the **vm-prov** directory :
-1) Create a **terraform.tfvars** under the **vm-prov** directory:
+1) Create a **terraform.tfvars** file:
 ```sh
 # Example of terraform.tfvars
 vms = [
