@@ -42,9 +42,29 @@ For more information visit :
 - [Documentation warning for terraform provider libvirt ](https://github.com/dmacvicar/terraform-provider-libvirt/commit/22f096d9)
 
 ## VM Provisionning
+Under the **vm-prov** directory :
+1) Create a **terraform.tfvars** under the **vm-prov** directory:
 ```sh
-$ cd vm-prov
+# Example of terraform.tfvars
+vms = [
+  {
+    vm_name   = "k3s-master"
+    vcpu      = 2
+    memory    = 2048
+    disk_size = 10737418240 # 10 GiB
+  }
+  ,
+  {
+    vm_name   = "k3s-node"
+    vcpu      = 4
+    memory    = 4096
+    disk_size = 10737418240 # 10 GiB
+  }
+]
+```
 
+2) Then execute the following commands: 
+```sh
 $ terraform init
 
 $ terraform plan
