@@ -75,3 +75,14 @@ $ terraform apply -auto-approve
 ```
 
 ## VM Configuration
+
+Check if libvirt plugin is working : 
+```sh
+$ ansible-inventory -i libvirt-inv.yml --graph
+```
+
+```sh
+$ cd vm-cfg
+
+$ ansible-playbook main-playbook.yml -i libvirt-inv.yml
+```
