@@ -6,6 +6,8 @@ Leveraging automation tools for local development.
 ### **Requirements**
 - linux based OS with GUI (Ubuntu 22.04)
 - terraform (v1.3.6)
+- ansible (ansible [core] 2.14.1)
+- community.libvirt plugin for ansible (ansible-galaxy collection install community.libvirt)
 - qemu_kvm/libvirt/virt-manager
 
 ##### **Steps for Installing QEMU/KVM with virt-manager**
@@ -69,5 +71,7 @@ $ terraform init
 
 $ terraform plan
 
-$ terraform apply
+$ terraform apply -auto-approve
 ```
+
+## VM Configuration

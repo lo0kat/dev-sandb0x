@@ -1,0 +1,10 @@
+---
+- name: First step of playbook
+  debug:
+    msg: "This is a test"
+
+- name: Touch a file, using symbolic modes to set the permissions (equivalent to 0644)
+  ansible.builtin.file:
+    path: /tmp/test.abc
+    state: touch
+    mode: u=rw,g=r,o=r

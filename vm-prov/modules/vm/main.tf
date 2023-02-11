@@ -49,10 +49,11 @@ resource "libvirt_cloudinit_disk" "commoninit" {
 
 # Create the machine
 resource "libvirt_domain" "vm_domain" {
-  name      = var.vm_name
-  memory    = var.memory
-  vcpu      = var.vcpu
-  cloudinit = libvirt_cloudinit_disk.commoninit.id
+  name        = var.vm_name
+  description = "development"
+  memory      = var.memory
+  vcpu        = var.vcpu
+  cloudinit   = libvirt_cloudinit_disk.commoninit.id
 
   network_interface {
     network_name = "default"
