@@ -1,6 +1,6 @@
 # dev-sandb0x
 ## Goal
-Leveraging automation tools for local development.
+Embracing Infrastructure As Code principles from scratch.
 
 ## Installation
 ### **Requirements**
