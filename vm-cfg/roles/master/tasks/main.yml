@@ -1,0 +1,4 @@
+---
+- name: K3S master setup
+  debug:
+    msg: "K3s master setup"

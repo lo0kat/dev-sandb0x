@@ -1,12 +1,7 @@
 plugin: community.libvirt.libvirt
 uri: 'qemu:///system'
 
-keyed_groups:
-  # add hosts to tag_Name_value groups for each aws_ec2 host's tags.Name variable
-  - key: description
-    prefix: tag_Name_
-    separator: ""
-
 groups:
-  # add hosts to the group development if any of the dictionary's keys or values is the word 'devel'
-  k3s: "'k3s' in (tags.name|list)"
+  kube_master: "'master' in (xml_desc|string)"
+  kube_node: "'node' in (xml_desc|string)"
+  # add hosts to the "private_only" group if the host doesn't have a public IP associated to it

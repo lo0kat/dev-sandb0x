@@ -1,0 +1,4 @@
+---
+- name: K3S node setup
+  debug:
+    msg: "K3s node setup"
