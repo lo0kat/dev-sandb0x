@@ -2,3 +2,9 @@
 - name: K3S node setup
   debug:
     msg: "K3s node setup"
+
+- name: Open port for Kube API  
+  ansible.posix.firewalld:
+    port: 6443/tcp
+    permanent: true
+    state: enabled

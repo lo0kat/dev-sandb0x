@@ -1,10 +1,25 @@
 ---
-- name: First step of playbook
+- name: First step of Common Tasks
   debug:
     msg: "This is a test"
 
-- name: Touch a file, using symbolic modes to set the permissions (equivalent to 0644)
-  ansible.builtin.file:
-    path: /tmp/test.abc
-    state: touch
-    mode: u=rw,g=r,o=r
+- name: Install FirewallD
+  dnf:
+    name: httpd
+    state: latest 
+
+# # - name: Open port for flannel VXLAN  
+# #   ansible.posix.firewalld:
+# #     port: 8472/udp
+# #     permanent: true
+# #     state: enabled
+
+# - name: Download k3s binary x64
+#   get_url:
+#     url: https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/k3s
+#     checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/sha256sum-amd64.txt
+#     dest: /tmp/k3s
+#     owner: root
+#     group: root
+#     mode: 0755
+    
