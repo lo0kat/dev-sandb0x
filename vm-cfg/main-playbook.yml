@@ -2,12 +2,12 @@
 - hosts: all
   roles: 
     - common
-#
-#- hosts: kube_node
-#  roles:
-#    - node
-#
-#- hosts: kube_master
-#  roles:
-#    - master
-#    
+
+- hosts: kube_node
+  roles:
+   - node
+
+- hosts: kube_master
+  roles:
+   - master
+   

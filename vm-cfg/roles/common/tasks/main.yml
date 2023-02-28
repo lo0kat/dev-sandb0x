@@ -4,22 +4,51 @@
     msg: "This is a test"
 
 - name: Install FirewallD
+  become: yes
   dnf:
-    name: httpd
+    name: firewalld
     state: latest 
 
-# # - name: Open port for flannel VXLAN  
-# #   ansible.posix.firewalld:
-# #     port: 8472/udp
-# #     permanent: true
-# #     state: enabled
+- name: Ensure firewalld is running
+  become: yes
+  ansible.builtin.service:
+    name: firewalld
+    state: started
+    enabled: yes
 
-# - name: Download k3s binary x64
-#   get_url:
-#     url: https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/k3s
-#     checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/sha256sum-amd64.txt
-#     dest: /tmp/k3s
-#     owner: root
-#     group: root
-#     mode: 0755
-    
+- name: Open port for flannel VXLAN  
+  become: yes
+  ansible.posix.firewalld:
+    port: 8472/udp
+    permanent: true
+    state: enabled
+    immediate: true
+
+- name: Allow traffic from pods
+  become: yes
+  ansible.posix.firewalld:
+    zone: public
+    source: 10.42.0.0/16
+    state: enabled
+    permanent: true
+    immediate: true
+
+- name: Allow traffic from services  
+  become: yes
+  ansible.posix.firewalld:
+    zone: public
+    source: 10.43.0.0/16
+    state: enabled
+    permanent: true
+    immediate: true
+
+- name: Download k3s binary x64
+  become: yes
+  get_url:
+    url: https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/k3s
+    checksum: sha256:https://github.com/k3s-io/k3s/releases/download/{{ k3s_version }}/sha256sum-amd64.txt
+    dest: /tmp/k3s
+    owner: ansible
+    group: ansible
+    mode: 0755
+  
