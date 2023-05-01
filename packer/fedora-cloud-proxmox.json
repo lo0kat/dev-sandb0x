@@ -1,0 +1,66 @@
+{
+    "variables": {
+      "proxmox_node": "pve",
+      "proxmox_pool": "local",
+      "proxmox_storage": "local-lvm",
+      "fedora_version": "38",
+      "fedora_arch": "x86_64",
+      "ssh_username": "fedora",
+      "proxmox_password": "{{env `PROXMOX_PASS`}}",
+      "proxmox_host" : "{{env `PROXMOX_HOST`}}"
+    },
+    "builders": [
+      {
+        "type": "proxmox-iso",
+        "insecure_skip_tls_verify": true,
+        "proxmox_url": "{{user `proxmox_host`}}",
+        "username": "root@pam",
+        "password":"{{user `proxmox_password`}}",
+        "node": "{{user `proxmox_node`}}",
+        "pool": "{{user `proxmox_storage`}}",
+        "vm_name": "fedcloud",
+        "cores": 2,
+        "memory": 2048,
+        "disks":[
+            {
+              "type": "scsi",
+              "disk_size": "5G",
+              "storage_pool": "local-lvm"
+            }
+          ],
+        "iso_download_pve":true,
+        "iso_url": "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/37.20230401.3.0/x86_64/fedora-coreos-37.20230401.3.0-live.x86_64.iso",
+        "iso_storage_pool":"local",
+        "iso_checksum":"4f6f77d3417c11f659a7570e75cc394539bf5afaeacd443b6c72c8aea430dd9a",
+        "ssh_username": "{{user `ssh_username`}}",
+        "ssh_password": "password",
+        "ssh_wait_timeout": "30m",
+        "ssh_handshake_attempts": "10",
+        "ssh_timeout": "1h",
+        "network_adapters":[
+            {
+            "model": "virtio",
+            "bridge": "vmbr0"
+          }
+        ]
+      }
+    ],
+    "provisioners": [
+      {
+        "type": "shell",
+        "inline": [
+          "dnf -y upgrade",
+          "dnf -y install cloud-init",
+          "systemctl enable cloud-init.service",
+          "rm -f /etc/cloud/cloud.cfg.d/50-curtin-networking.cfg",
+          "echo 'datasource_list: [ NoCloud, None ]' > /etc/cloud/cloud.cfg.d/99-default.cfg",
+          "echo 'network: {config: disabled}' > /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg",
+          "echo 'preserve_hostname: true' > /etc/cloud/cloud.cfg.d/99-preserve-hostname.cfg",
+          "echo 'ssh_pwauth: true' >> /etc/cloud/cloud.cfg",
+          "systemctl stop firewalld.service",
+          "systemctl disable firewalld.service"
+        ]
+      }
+    ]
+  }
+  
