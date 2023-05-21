@@ -5,7 +5,7 @@
       "proxmox_storage": "local-lvm",
       "fedora_version": "38",
       "fedora_arch": "x86_64",
-      "ssh_username": "fedora",
+      "ssh_username": "core",
       "proxmox_password": "{{env `PROXMOX_PASS`}}",
       "proxmox_host" : "{{env `PROXMOX_HOST`}}"
     },
@@ -13,19 +13,33 @@
       {
         "type": "proxmox-iso",
         "insecure_skip_tls_verify": true,
+        "template_name": "coreos-37",
+        "template_description": "Core OS 37, generated on {{ isotime \"2023-05-08T15:04:05Z\" }}",
         "proxmox_url": "{{user `proxmox_host`}}",
         "username": "root@pam",
         "password":"{{user `proxmox_password`}}",
         "node": "{{user `proxmox_node`}}",
-        "pool": "{{user `proxmox_storage`}}",
-        "vm_name": "fedcloud",
+        "vm_name": "coreos-vm",
         "cores": 2,
         "memory": 2048,
         "disks":[
             {
-              "type": "scsi",
-              "disk_size": "5G",
+              "type": "virtio",
+              "disk_size": "16G",
               "storage_pool": "local-lvm"
+            }
+          ],
+          "network_adapters":[
+              {
+              "model": "virtio",
+              "bridge": "vmbr0"
+            }
+          ],
+          "additional_iso_files":[
+            {
+              "cd_files" :["./config/template.ign"],
+              "iso_storage_pool" : "local",
+              "unmount" : true
             }
           ],
         "iso_download_pve":true,
@@ -33,32 +47,30 @@
         "iso_storage_pool":"local",
         "iso_checksum":"4f6f77d3417c11f659a7570e75cc394539bf5afaeacd443b6c72c8aea430dd9a",
         "ssh_username": "{{user `ssh_username`}}",
-        "ssh_password": "password",
-        "ssh_wait_timeout": "30m",
-        "ssh_handshake_attempts": "10",
-        "ssh_timeout": "1h",
-        "network_adapters":[
-            {
-            "model": "virtio",
-            "bridge": "vmbr0"
-          }
+        "boot_wait" : "2s",
+        "ssh_private_key_file" : "~/.ssh/dev_bastion",
+        "ssh_timeout": "20m",
+        "http_directory" : "config",
+        "cloud_init" : false,
+        "qemu_agent" : true,
+        "boot_command" : [
+          "<spacebar><wait><spacebar><wait><spacebar><wait><spacebar><wait><spacebar><wait>",
+          "<tab><wait>",
+          "<down><down><end>",
+          " ignition.config.url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/installer.ign",
+          "<enter>"
         ]
+      
       }
     ],
     "provisioners": [
       {
         "type": "shell",
         "inline": [
-          "dnf -y upgrade",
-          "dnf -y install cloud-init",
-          "systemctl enable cloud-init.service",
-          "rm -f /etc/cloud/cloud.cfg.d/50-curtin-networking.cfg",
-          "echo 'datasource_list: [ NoCloud, None ]' > /etc/cloud/cloud.cfg.d/99-default.cfg",
-          "echo 'network: {config: disabled}' > /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg",
-          "echo 'preserve_hostname: true' > /etc/cloud/cloud.cfg.d/99-preserve-hostname.cfg",
-          "echo 'ssh_pwauth: true' >> /etc/cloud/cloud.cfg",
-          "systemctl stop firewalld.service",
-          "systemctl disable firewalld.service"
+          "sudo mkdir /tmp/iso",
+          "sudo mount /dev/sr1 /tmp/iso -o ro",
+          "sudo coreos-installer install /dev/vda --ignition-file /tmp/iso/template.ign",
+          "sudo shutdown -h +1"
         ]
       }
     ]
