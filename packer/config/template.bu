@@ -1,5 +1,8 @@
 variant: fcos
 version: 1.4.0
+kernel_arguments:
+  should_exist:
+    - net.ifnames=0
 storage:
   files:
     - path: /etc/docker/daemon.json
@@ -14,17 +17,22 @@ storage:
       mode: 0600
       contents:
         inline: |
-          [connection]
-          id=eth0
-          type=ethernet
-          interface-name=eth0
-          [ipv4]
-          address1=192.168.1.201/24,192.168.1.1
-          dhcp-hostname=k3s-coreos
-          dns=192.168.1.1;
-          dns-search=
-          may-fail=false
-          method=manual      
+         [connection]
+         id=eth0
+         type=ethernet
+         interface-name=eth0
+
+         [ipv4]
+         address1=192.168.1.201/24
+         gateway=192.168.1.1
+         dns=8.8.8.8;
+         dns-search=
+         may-fail=false
+         method=manual
+
+         [ipv6]
+         method=disabled
+
       
 passwd:
   users:
